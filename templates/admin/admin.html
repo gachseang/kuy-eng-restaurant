@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Kuy Eng Restaurant</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .dashboard-card-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        .dashboard-card h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .dashboard-card p {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+        }
+        .dashboard-card .btn {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <nav class="admin-nav">
+        <div class="container">
+            <div class="nav-brand">
+                <h2>🍽️ ABA Admin</h2>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="admin.html" class="active">Dashboard</a></li>
+                <li><a href="categories.html">Categories</a></li>
+                <li><a href="menus.html">Menu Items</a></li>
+                <li><a href="../index.html" target="_blank">View Site</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="admin-header">
+            <h1>Admin Dashboard</h1>
+            <p>Welcome to Kuy Eng Restaurant Management System</p>
+        </div>
+
+        <div class="dashboard-cards">
+            <div class="dashboard-card">
+                <div class="dashboard-card-icon">📁</div>
+                <h2>Manage Categories</h2>
+                <p>Create, update, and organize your menu categories</p>
+                <a href="categories.html" class="btn btn-primary">Go to Categories</a>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="dashboard-card-icon">🍽️</div>
+                <h2>Manage Menu Items</h2>
+                <p>Add, edit, and manage your restaurant menu items</p>
+                <a href="menus.html" class="btn btn-primary">Go to Menu Items</a>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="dashboard-card-icon">👁️</div>
+                <h2>View Website</h2>
+                <p>See how your menu looks to customers</p>
+                <a href="../index.html" target="_blank" class="btn btn-secondary">Open Website</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Management - Kuy Eng Restaurant</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body>
+    <!-- Admin Navigation -->
+    <nav class="admin-nav">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="admin.html" style="color: white; text-decoration: none;">
+                    <h2>🍽️ ABA Admin</h2>
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="categories.html">Categories</a></li>
+                <li><a href="menus.html" class="active">Menu Items</a></li>
+                <li><a href="../index.html" target="_blank">View Site</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>Menu Item Management</h1>
+            <p>Manage your restaurant menu items</p>
+            <button class="btn btn-primary" id="openFormBtn">+ Add New Menu</button>
+        </div>
+
+        <!-- Menu Items List -->
+        <div class="table-card">
+            <div class="table-header">
+                <h2>All Menu Items</h2>
+                <div class="filter-controls">
+                    <select id="filterCategory">
+                        <option value="">All Categories</option>
+                    </select>
+                    <input type="text" id="searchMenu" placeholder="Search menu items...">
+                </div>
+                <div class="page-size-selector">
+                    <label for="pageSize">Show:</label>
+                    <select id="pageSize">
+                        <option value="12" selected>12</option>
+                        <option value="24">24</option>
+                        <option value="48">48</option>
+                        <option value="96">96</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="menu-grid" id="menuItemsGrid">
+                <!-- Dynamic content -->
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Showing <span id="showingStart">0</span> to <span id="showingEnd">0</span> of <span id="totalRecords">0</span> menu items
+                </div>
+                <div class="pagination-controls" id="paginationControls">
+                    <!-- Pagination buttons will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide-in Form Panel -->
+    <div id="formSlidePanel" class="slide-panel">
+        <div class="slide-panel-overlay"></div>
+        <div class="slide-panel-content">
+            <div class="slide-panel-header">
+                <h2 id="form-title">Add New Menu Item</h2>
+                <button class="close-panel" id="closeFormBtn">&times;</button>
+            </div>
+            
+            <form id="menuForm" enctype="multipart/form-data">
+                <input type="hidden" id="menuId" name="id">
+                <input type="hidden" id="currentImage" name="currentImage">
+                
+                <div class="form-group">
+                    <label for="menuTitle">Menu Title *</label>
+                    <input type="text" id="menuTitle" name="title" required 
+                           placeholder="e.g., Pad Thai, Tom Yum Soup">
+                </div>
+
+                <div class="form-group">
+                    <label for="menuCategory">Category *</label>
+                    <select id="menuCategory" name="category" required>
+                        <option value="">Select Category</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="menuDescription">Description</label>
+                    <textarea id="menuDescription" name="description" rows="3"
+                              placeholder="Describe the dish, ingredients, and special features"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="menuCurrency">Currency *</label>
+                        <select id="menuCurrency" name="currency" required>
+                            <option value="KHR">KHR (៛)</option>
+                            <option value="USD">USD ($)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="menuPrice">Regular Price *</label>
+                        <input type="number" id="menuPrice" name="price" step="0.01" min="0" required 
+                               placeholder="0.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="menuPromoPrice">Promotion Price</label>
+                        <input type="number" id="menuPromoPrice" name="promotionPrice" step="0.01" min="0"
+                               placeholder="Leave empty if no promotion">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="menuImage">Menu Image</label>
+                    <input type="file" id="menuImage" name="image" accept="image/*">
+                    <small>Recommended: 800x600px, Max 2MB</small>
+                    <div id="imagePreview" class="image-preview"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="menuAvailable" name="available" checked>
+                        Available (Show on menu)
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="menuFeatured" name="featured">
+                        Featured Item (Highlight on homepage)
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Add Menu Item</button>
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete this menu item?</p>
+            <p class="warning-text">⚠️ This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn btn-danger" id="confirmDelete">Delete</button>
+                <button class="btn btn-secondary" id="cancelDelete">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/static/js/admin/menus.js"></script>
+</body>
+</html>

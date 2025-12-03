@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Restaurant Menu - Delicious Food Awaits</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-content">
+      <h1>🍽️ Our Menu</h1>
+      <p class="tagline">Discover our delicious selection</p>
+    </div>
+    
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="🔍 Search for dishes..." oninput="filterMenu()">
+      <select id="categoryFilter" onchange="filterMenu()">
+        <option value="">All Categories</option>
+      </select>
+      <select id="sortFilter" onchange="filterMenu()">
+        <option value="default">Sort By</option>
+        <option value="price-low">Price: Low to High</option>
+        <option value="price-high">Price: High to Low</option>
+        <option value="name">Name: A to Z</option>
+      </select>
+    </div>
+  </header>
+
+  <main>
+    <div id="categoryTabs" class="category-tabs"></div>
+    
+    <div id="menuContainer" class="menu-container">
+      <div class="loading">Loading menu...</div>
+    </div>
+
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <p>😕 No items found matching your search.</p>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Restaurant Menu System | <a href="admin/admin.html">Admin Panel</a></p>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="/static/js/frontend/menu.js"></script>
+</body>
+</html>
