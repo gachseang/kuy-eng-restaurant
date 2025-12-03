@@ -2,9 +2,10 @@
 Kuy Eng Restaurant - Main Entry Point
 """
 from app import create_app
+from fastapi import FastAPI
+from mangum import Mangum
 
-app = create_app()
+app = FastAPI()
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+handler = Mangum(app)
+
