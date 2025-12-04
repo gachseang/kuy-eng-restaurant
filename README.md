@@ -41,31 +41,43 @@ A fully functional Restaurant Menu Management Web Application with separate page
 
 ```
 kuy_eng_restaurant/
-├── templates/              # HTML templates
-│   ├── index.html         # Public menu display page
-│   ├── api-test.html      # API testing page
-│   └── admin/             # Admin panel pages
-│       ├── admin.html     # Admin dashboard (landing page)
-│       ├── categories.html # Category management page
-│       └── menus.html     # Menu item management page
-├── static/                # Static assets
+├── app/                         # Python application module
+│   ├── __init__.py             # App factory
+│   ├── config.py               # Configuration
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   ├── frontend.py         # Frontend routes
+│   │   └── admin.py            # Admin API routes
+│   └── services/
+│       ├── __init__.py
+│       ├── category_service.py # Category business logic
+│       └── menu_service.py     # Menu business logic
+├── data/                       # JSON data storage
+│   ├── categories.json         # Categories data
+│   └── menus.json             # Menu items data
+├── static/                    # Static assets
 │   ├── css/
-│   │   ├── style.css      # Main styles
-│   │   └── admin.css      # Admin panel styles
+│   │   ├── style.css         # Main styles
+│   │   └── admin.css         # Admin panel styles
 │   ├── js/
-│   │   ├── script.js      # Frontend scripts
-│   │   ├── menu.js        # Menu filtering logic
-│   │   ├── categories.js  # Category management logic
-│   │   └── menus.js       # Menu item management logic
-│   └── images/            # Uploaded images storage
-├── data/                  # JSON data storage
-│   ├── categories.json    # Categories data
-│   └── menus.json         # Menu items data
-├── main.py                # FastAPI backend server
-├── requirements.txt       # Python dependencies
-├── .gitignore            # Git ignore rules
-├── QUICKSTART.md         # Quick start guide
-└── README.md             # This file
+│   │   ├── admin/
+│   │   │   ├── categories.js # Category management
+│   │   │   └── menus.js      # Menu management
+│   │   └── frontend/
+│   │       └── menu.js       # Public menu display
+│   ├── images/               # Static images
+│   └── uploads/              # Uploaded menu images
+├── templates/                # HTML templates
+│   ├── admin/
+│   │   ├── admin.html       # Admin dashboard
+│   │   ├── categories.html  # Category management
+│   │   └── menus.html       # Menu management
+│   └── frontend/
+│       └── index.html       # Public menu page
+├── main.py                  # Application entry point
+├── .gitignore              # Git ignore rules
+├── README.md               # This file
+└── requirements.txt        # Python dependencies
 ```
 
 ## 🚀 Getting Started
@@ -226,9 +238,9 @@ uvicorn main:app --port YOUR_PORT
 ```
 
 ### Upload Directory
-Images are stored in `/static/images/` directory. This is configured in `main.py`:
+Images are stored in `/static/uploads/` directory. This is configured in `app/config.py`:
 ```python
-UPLOAD_DIR = "static/images"
+UPLOAD_DIR = "static/uploads"
 ```
 
 ### Max File Size
@@ -252,7 +264,7 @@ allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/web
 - Make sure you're in the project directory
 
 ### Images not uploading
-- Check if `static/images/` directory exists and is writable
+- Check if `static/uploads/` directory exists and is writable
 - Verify file size is under 5MB
 - Check file format (jpg, png, gif, webp)
 - Check FastAPI logs for errors

@@ -6,6 +6,7 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
 ENV/
 build/
 develop-eggs/
@@ -37,6 +38,8 @@ Thumbs.db
 # Uploads
 static/images/*
 !static/images/.gitkeep
+static/uploads/*
+!static/uploads/.gitkeep
 
 # Data
 data/*.json
