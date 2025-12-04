@@ -8,22 +8,26 @@
 </head>
 <body>
   <header class="main-header">
-    <div class="header-content">
-      <h1>🍽️ Our Menu</h1>
-      <p class="tagline">Discover our delicious selection</p>
+    <div class="logo-container">
+      <div class="logo">
+        <div class="logo-text-main">Kuy Eng</div>
+        <div class="logo-text-sub">Restaurant</div>
+      </div>
     </div>
     
     <div class="search-bar">
       <input type="text" id="searchInput" placeholder="🔍 Search for dishes..." oninput="filterMenu()">
-      <select id="categoryFilter" onchange="filterMenu()">
-        <option value="">All Categories</option>
-      </select>
-      <select id="sortFilter" onchange="filterMenu()">
-        <option value="default">Sort By</option>
-        <option value="price-low">Price: Low to High</option>
-        <option value="price-high">Price: High to Low</option>
-        <option value="name">Name: A to Z</option>
-      </select>
+      <div class="search-bar-row">
+        <select id="categoryFilter" onchange="filterMenu()">
+          <option value="">All Categories</option>
+        </select>
+        <select id="sortFilter" onchange="filterMenu()">
+          <option value="default">Sort By</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+          <option value="name">Name: A to Z</option>
+        </select>
+      </div>
     </div>
   </header>
 
@@ -40,7 +44,7 @@
   </main>
 
   <footer>
-    <p>&copy; 2025 Restaurant Menu System | <a href="admin/admin.html">Admin Panel</a></p>
+    <p>&copy; 2025 Restaurant Menu System</p>
   </footer>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

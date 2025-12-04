@@ -59,6 +59,18 @@
     margin-bottom: 30px;
 }
 
+.admin-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-header-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
 .admin-header h1 {
     color: #2c3e50;
     margin-bottom: 10px;
@@ -89,6 +101,11 @@
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 20px;
+}
+
+/* Two column layout for price ranges */
+.form-row.two-columns {
+    grid-template-columns: 1fr 1fr;
 }
 
 .form-group {

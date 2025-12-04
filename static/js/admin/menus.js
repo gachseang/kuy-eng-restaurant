@@ -39,6 +39,20 @@ $(document).ready(function() {
         previewImage(this);
     });
 
+    // Price type change handler
+    $('#priceType').change(function() {
+        const priceType = $(this).val();
+        $('.price-fields').hide();
+        
+        if (priceType === 'single') {
+            $('#singlePriceFields').show();
+        } else if (priceType === 'range') {
+            $('#priceRangeFields').show();
+        } else if (priceType === 'promotion') {
+            $('#promotionPriceFields').show();
+        }
+    });
+
     // Filter by category
     $('#filterCategory').change(function() {
         filterMenus();
@@ -157,18 +171,40 @@ $(document).ready(function() {
             
             console.log('Menu:', menu.title, 'Category ID:', menu.categoryId, 'Found:', categoryName);
             
-            const hasPromo = menu.promotionPrice && menu.promotionPrice < menu.price;
-            const displayPrice = hasPromo ? menu.promotionPrice : menu.price;
             const isKHR = menu.currency === 'KHR';
+            const hasRange = menu.minPrice !== undefined && menu.maxPrice !== undefined;
+            const hasPromo = menu.promotionPrice && menu.price && menu.promotionPrice < menu.price;
             
             // Format price with proper currency display
             let priceDisplay, originalPriceDisplay;
-            if (isKHR) {
-                priceDisplay = Math.round(displayPrice).toLocaleString('en-US') + '៛';
-                originalPriceDisplay = hasPromo ? Math.round(menu.price).toLocaleString('en-US') + '៛' : '';
+            
+            if (hasRange) {
+                // Price range
+                if (isKHR) {
+                    priceDisplay = Math.round(menu.minPrice).toLocaleString('en-US') + '៛ - ' + Math.round(menu.maxPrice).toLocaleString('en-US') + '៛';
+                } else {
+                    priceDisplay = '$' + menu.minPrice.toFixed(2) + ' - $' + menu.maxPrice.toFixed(2);
+                }
+                originalPriceDisplay = '';
+            } else if (hasPromo) {
+                // Promotion price
+                const displayPrice = menu.promotionPrice;
+                if (isKHR) {
+                    priceDisplay = Math.round(displayPrice).toLocaleString('en-US') + '៛';
+                    originalPriceDisplay = Math.round(menu.price).toLocaleString('en-US') + '៛';
+                } else {
+                    priceDisplay = '$' + displayPrice.toFixed(2);
+                    originalPriceDisplay = '$' + menu.price.toFixed(2);
+                }
             } else {
-                priceDisplay = '$' + displayPrice.toFixed(2);
-                originalPriceDisplay = hasPromo ? '$' + menu.price.toFixed(2) : '';
+                // Single price
+                const displayPrice = menu.price || 0;
+                if (isKHR) {
+                    priceDisplay = Math.round(displayPrice).toLocaleString('en-US') + '៛';
+                } else {
+                    priceDisplay = '$' + displayPrice.toFixed(2);
+                }
+                originalPriceDisplay = '';
             }
             
             const availableBadge = menu.available !== false 
@@ -324,12 +360,31 @@ $(document).ready(function() {
         const title = $('#menuTitle').val().trim();
         const categoryId = $('#menuCategory').val();
         const description = $('#menuDescription').val().trim();
-        const price = parseFloat($('#menuPrice').val()) || 0;
-        const promotionPrice = $('#menuPromoPrice').val() ? parseFloat($('#menuPromoPrice').val()) : null;
+        const priceType = $('#priceType').val();
         const currency = $('#menuCurrency').val() || 'KHR';
         const available = $('#menuAvailable').is(':checked');
         const featured = $('#menuFeatured').is(':checked');
         const imageFile = $('#menuImage')[0].files[0];
+        
+        let price = null, promotionPrice = null, minPrice = null, maxPrice = null;
+        
+        if (priceType === 'single') {
+            price = parseFloat($('#menuPrice').val()) || 0;
+        } else if (priceType === 'range') {
+            minPrice = parseFloat($('#menuMinPrice').val()) || 0;
+            maxPrice = parseFloat($('#menuMaxPrice').val()) || 0;
+            if (minPrice >= maxPrice) {
+                showError('Max price must be greater than min price');
+                return;
+            }
+        } else if (priceType === 'promotion') {
+            price = parseFloat($('#menuRegularPrice').val()) || 0;
+            promotionPrice = parseFloat($('#menuPromoPrice').val()) || 0;
+            if (promotionPrice >= price) {
+                showError('Promotion price must be less than regular price');
+                return;
+            }
+        }
 
         // Validation
         if (!title) {
@@ -355,7 +410,7 @@ $(document).ready(function() {
                 dataType: 'json',
                 success: function(uploadResponse) {
                     if (uploadResponse.success) {
-                        saveMenuData(title, categoryId, description, price, promotionPrice, currency, available, featured, uploadResponse.imagePath);
+                        saveMenuData(title, categoryId, description, price, promotionPrice, minPrice, maxPrice, currency, available, featured, uploadResponse.imagePath);
                     } else {
                         showError('Image upload failed: ' + uploadResponse.error);
                     }
@@ -366,23 +421,32 @@ $(document).ready(function() {
             });
         } else {
             const currentImage = editingId ? ($('#currentImage').val() || 'static/images/default.jpg') : 'static/images/default.jpg';
-            saveMenuData(title, categoryId, description, price, promotionPrice, currency, available, featured, currentImage);
+            saveMenuData(title, categoryId, description, price, promotionPrice, minPrice, maxPrice, currency, available, featured, currentImage);
         }
     }
 
     // Save menu data to API
-    function saveMenuData(title, categoryId, description, price, promotionPrice, currency, available, featured, imagePath) {
+    function saveMenuData(title, categoryId, description, price, promotionPrice, minPrice, maxPrice, currency, available, featured, imagePath) {
         const menuData = {
             title: title,
             categoryId: categoryId,
             description: description,
-            price: price,
-            promotionPrice: promotionPrice,
             currency: currency,
             image: imagePath,
             available: available,
             featured: featured
         };
+        
+        // Add price fields based on what's provided
+        if (minPrice !== null && maxPrice !== null) {
+            menuData.minPrice = minPrice;
+            menuData.maxPrice = maxPrice;
+        } else {
+            menuData.price = price;
+            if (promotionPrice !== null) {
+                menuData.promotionPrice = promotionPrice;
+            }
+        }
 
         const method = editingId ? 'PUT' : 'POST';
         const url = editingId ? `${API_BASE}/menus/${editingId}` : `${API_BASE}/menus`;
@@ -418,12 +482,24 @@ $(document).ready(function() {
         $('#menuTitle').val(menu.title);
         $('#menuCategory').val(menu.categoryId);
         $('#menuDescription').val(menu.description);
-        $('#menuPrice').val(menu.price);
-        $('#menuPromoPrice').val(menu.promotionPrice || '');
         $('#menuCurrency').val(menu.currency || 'KHR');
         $('#menuAvailable').prop('checked', menu.available !== false);
         $('#menuFeatured').prop('checked', menu.featured === true);
         $('#currentImage').val(menu.image || '');
+        
+        // Determine and set price type
+        if (menu.minPrice !== undefined && menu.maxPrice !== undefined) {
+            $('#priceType').val('range').trigger('change');
+            $('#menuMinPrice').val(menu.minPrice);
+            $('#menuMaxPrice').val(menu.maxPrice);
+        } else if (menu.promotionPrice && menu.price) {
+            $('#priceType').val('promotion').trigger('change');
+            $('#menuRegularPrice').val(menu.price);
+            $('#menuPromoPrice').val(menu.promotionPrice);
+        } else {
+            $('#priceType').val('single').trigger('change');
+            $('#menuPrice').val(menu.price || 0);
+        }
 
         // Show current image
         if (menu.image) {

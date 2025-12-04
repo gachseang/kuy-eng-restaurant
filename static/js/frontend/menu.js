@@ -139,23 +139,42 @@ function displayMenu() {
     const hasPromotion = menu.promotionPrice && menu.promotionPrice < menu.price;
     const discount = hasPromotion ? Math.round((1 - menu.promotionPrice / menu.price) * 100) : 0;
     const isKHR = menu.currency === 'KHR';
+    const hasRange = menu.minPrice !== undefined && menu.maxPrice !== undefined;
     
-    // Format prices based on currency
-    let currentPriceDisplay, promoPriceDisplay, originalPriceDisplay, savingsDisplay;
-    if (isKHR) {
-      currentPriceDisplay = Math.round(menu.price).toLocaleString('en-US') + '៛';
-      if (hasPromotion) {
-        promoPriceDisplay = Math.round(menu.promotionPrice).toLocaleString('en-US') + '៛';
-        originalPriceDisplay = Math.round(menu.price).toLocaleString('en-US') + '៛';
-        savingsDisplay = Math.round(menu.price - menu.promotionPrice).toLocaleString('en-US') + '៛';
+    // Format prices based on currency and type
+    let priceDisplay;
+    if (hasRange) {
+      // Price range display
+      if (isKHR) {
+        priceDisplay = `${Math.round(menu.minPrice).toLocaleString('en-US')}៛ - ${Math.round(menu.maxPrice).toLocaleString('en-US')}៛`;
+      } else {
+        priceDisplay = `$${menu.minPrice.toFixed(2)} - $${menu.maxPrice.toFixed(2)}`;
       }
     } else {
-      currentPriceDisplay = '$' + menu.price.toFixed(2);
-      if (hasPromotion) {
-        promoPriceDisplay = '$' + menu.promotionPrice.toFixed(2);
-        originalPriceDisplay = '$' + menu.price.toFixed(2);
-        savingsDisplay = '$' + (menu.price - menu.promotionPrice).toFixed(2);
+      // Single price or promotion display
+      let currentPriceDisplay, promoPriceDisplay, originalPriceDisplay, savingsDisplay;
+      if (isKHR) {
+        currentPriceDisplay = Math.round(menu.price).toLocaleString('en-US') + '៛';
+        if (hasPromotion) {
+          promoPriceDisplay = Math.round(menu.promotionPrice).toLocaleString('en-US') + '៛';
+          originalPriceDisplay = Math.round(menu.price).toLocaleString('en-US') + '៛';
+          savingsDisplay = Math.round(menu.price - menu.promotionPrice).toLocaleString('en-US') + '៛';
+        }
+      } else {
+        currentPriceDisplay = '$' + menu.price.toFixed(2);
+        if (hasPromotion) {
+          promoPriceDisplay = '$' + menu.promotionPrice.toFixed(2);
+          originalPriceDisplay = '$' + menu.price.toFixed(2);
+          savingsDisplay = '$' + (menu.price - menu.promotionPrice).toFixed(2);
+        }
       }
+      priceDisplay = hasPromotion ? 
+        `<div class="price-wrapper">
+          <span class="original-price">${originalPriceDisplay}</span>
+          <span class="promo-price">${promoPriceDisplay}</span>
+        </div>
+        <span class="savings">Save ${savingsDisplay}</span>` :
+        `<span class="current-price">${currentPriceDisplay}</span>`;
     }
 
     $container.append(`
@@ -169,15 +188,7 @@ function displayMenu() {
           <h3 class="menu-title">${menu.title}</h3>
           <p class="menu-description">${menu.description}</p>
           <div class="menu-price-container">
-            ${hasPromotion ? `
-              <div class="price-wrapper">
-                <span class="original-price">${originalPriceDisplay}</span>
-                <span class="promo-price">${promoPriceDisplay}</span>
-              </div>
-              <span class="savings">Save ${savingsDisplay}</span>
-            ` : `
-              <span class="current-price">${currentPriceDisplay}</span>
-            `}
+            ${hasRange ? `<span class="price-range">${priceDisplay}</span>` : priceDisplay}
           </div>
         </div>
       </div>
