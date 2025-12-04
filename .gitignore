@@ -45,6 +45,7 @@ static/uploads/*
 !static/uploads/.gitkeep
 
 # Data
+data/
 data/*.json
 
 # Logs
