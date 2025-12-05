@@ -5,10 +5,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.config import ALLOWED_ORIGINS
+from app.database import init_db
 
 def create_app():
     """Application factory"""
     app = FastAPI(title="Kuy Eng Restaurant API")
+    
+    # Initialize database on startup
+    @app.on_event("startup")
+    async def startup_event():
+        """Initialize database tables on startup"""
+        init_db()
     
     # CORS middleware
     app.add_middleware(

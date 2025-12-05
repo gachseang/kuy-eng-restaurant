@@ -101,15 +101,25 @@
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 20px;
+    width: 100%;
 }
 
 /* Two column layout for price ranges */
 .form-row.two-columns {
     grid-template-columns: 1fr 1fr;
+    width: 100%;
+}
+
+/* Three column layout for price fields */
+.form-row.three-columns {
+    grid-template-columns: 1fr 1fr 1fr;
+    width: 100%;
 }
 
 .form-group {
     margin-bottom: 20px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .form-group label {
@@ -130,6 +140,7 @@
     border-radius: 8px;
     font-size: 1rem;
     transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
 .form-group input:focus,

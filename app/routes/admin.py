@@ -34,7 +34,8 @@ class Menu(BaseModel):
     title: str
     categoryId: str
     description: str
-    price: float
+    minPrice: float
+    maxPrice: Optional[float] = None
     promotionPrice: Optional[float] = None
     currency: Optional[str] = "KHR"
     image: Optional[str] = "static/images/default.jpg"
@@ -46,7 +47,8 @@ class MenuUpdate(BaseModel):
     title: Optional[str] = None
     categoryId: Optional[str] = None
     description: Optional[str] = None
-    price: Optional[float] = None
+    minPrice: Optional[float] = None
+    maxPrice: Optional[float] = None
     promotionPrice: Optional[float] = None
     currency: Optional[str] = None
     image: Optional[str] = None
@@ -170,7 +172,8 @@ async def create_menu(menu: Menu):
             title=menu.title,
             category_id=menu.categoryId,
             description=menu.description,
-            price=menu.price,
+            min_price=menu.minPrice,
+            max_price=menu.maxPrice,
             promotion_price=menu.promotionPrice,
             currency=menu.currency,
             image=menu.image,
@@ -184,14 +187,15 @@ async def create_menu(menu: Menu):
 
 @router.put("/menus/{menu_id}")
 async def update_menu(menu_id: str, menu: MenuUpdate):
-    """Update an existing menu item"""
+    """Update a menu item"""
     try:
         updated_menu = menu_service.update_menu(
             menu_id,
             title=menu.title,
             categoryId=menu.categoryId,
             description=menu.description,
-            price=menu.price,
+            minPrice=menu.minPrice,
+            maxPrice=menu.maxPrice,
             promotionPrice=menu.promotionPrice,
             currency=menu.currency,
             image=menu.image,

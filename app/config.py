@@ -10,7 +10,14 @@ load_dotenv()
 # Environment
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
-# Data files
+# Database settings
+DB_HOST = os.getenv("DB_HOST", "mysql-205386-0.cloudclusters.net")
+DB_PORT = os.getenv("DB_PORT", "10048")
+DB_USER = os.getenv("DB_USER", "admin")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "pNuMHHoG")
+DB_NAME = os.getenv("DB_NAME", "kuyeng_restaurant")
+
+# Data files (kept for backward compatibility during migration)
 DATA_DIR = os.getenv("DATA_DIR", "data")
 DATA_FILE = os.path.join(DATA_DIR, "categories.json")
 MENUS_FILE = os.path.join(DATA_DIR, "menus.json")

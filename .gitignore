@@ -44,9 +44,13 @@ static/images/*
 static/uploads/*
 !static/uploads/.gitkeep
 
-# Data
+# Data (old JSON files no longer used)
 data/
 data/*.json
+
+# Test files
+test_*.py
+*_test.py
 
 # Logs
 *.log

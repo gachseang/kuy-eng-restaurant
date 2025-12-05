@@ -10,6 +10,8 @@ $(document).ready(function() {
     let currentPage = 1;
     let pageSize = 12;
 
+    console.log('Menu admin page loaded');
+
     // Load data on page load
     loadCategories();
 
@@ -37,20 +39,6 @@ $(document).ready(function() {
     // Image preview
     $('#menuImage').change(function() {
         previewImage(this);
-    });
-
-    // Price type change handler
-    $('#priceType').change(function() {
-        const priceType = $(this).val();
-        $('.price-fields').hide();
-        
-        if (priceType === 'single') {
-            $('#singlePriceFields').show();
-        } else if (priceType === 'range') {
-            $('#priceRangeFields').show();
-        } else if (priceType === 'promotion') {
-            $('#promotionPriceFields').show();
-        }
     });
 
     // Filter by category
@@ -83,11 +71,13 @@ $(document).ready(function() {
 
     // Load categories
     function loadCategories() {
+        console.log('Loading categories...');
         $.ajax({
             url: `${API_BASE}/categories`,
             method: 'GET',
             dataType: 'json',
             success: function(response) {
+                console.log('Categories response:', response);
                 if (response.success && response.categories) {
                     categories = response.categories.filter(c => c.active !== false);
                     renderCategoryOptions();
@@ -97,6 +87,7 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
+                console.error('Categories error:', xhr);
                 showError('Failed to load categories: ' + (xhr.responseJSON?.error || 'Server error'));
             }
         });
@@ -118,21 +109,25 @@ $(document).ready(function() {
 
     // Load menus
     function loadMenus() {
+        console.log('Loading menus...');
         $.ajax({
             url: `${API_BASE}/menus`,
             method: 'GET',
             dataType: 'json',
             success: function(response) {
+                console.log('Menus response:', response);
                 if (response.success && response.menus) {
                     menus = response.menus;
                     filteredMenus = menus;
                     currentPage = 1;
+                    console.log('Loaded', menus.length, 'menus');
                     renderMenus();
                 } else {
                     showError('Failed to load menus');
                 }
             },
             error: function(xhr) {
+                console.error('Menus error:', xhr);
                 showError('Failed to load menus: ' + (xhr.responseJSON?.error || 'Server error'));
             }
         });
@@ -172,8 +167,8 @@ $(document).ready(function() {
             console.log('Menu:', menu.title, 'Category ID:', menu.categoryId, 'Found:', categoryName);
             
             const isKHR = menu.currency === 'KHR';
-            const hasRange = menu.minPrice !== undefined && menu.maxPrice !== undefined;
-            const hasPromo = menu.promotionPrice && menu.price && menu.promotionPrice < menu.price;
+            const hasRange = menu.minPrice !== undefined && menu.maxPrice !== undefined && menu.maxPrice > menu.minPrice;
+            const hasPromo = menu.promotionPrice && menu.minPrice && menu.promotionPrice < menu.minPrice;
             
             // Format price with proper currency display
             let priceDisplay, originalPriceDisplay;
@@ -191,14 +186,14 @@ $(document).ready(function() {
                 const displayPrice = menu.promotionPrice;
                 if (isKHR) {
                     priceDisplay = Math.round(displayPrice).toLocaleString('en-US') + '៛';
-                    originalPriceDisplay = Math.round(menu.price).toLocaleString('en-US') + '៛';
+                    originalPriceDisplay = Math.round(menu.minPrice).toLocaleString('en-US') + '៛';
                 } else {
                     priceDisplay = '$' + displayPrice.toFixed(2);
-                    originalPriceDisplay = '$' + menu.price.toFixed(2);
+                    originalPriceDisplay = '$' + menu.minPrice.toFixed(2);
                 }
             } else {
                 // Single price
-                const displayPrice = menu.price || 0;
+                const displayPrice = menu.minPrice || menu.price || 0;
                 if (isKHR) {
                     priceDisplay = Math.round(displayPrice).toLocaleString('en-US') + '៛';
                 } else {
@@ -360,32 +355,15 @@ $(document).ready(function() {
         const title = $('#menuTitle').val().trim();
         const categoryId = $('#menuCategory').val();
         const description = $('#menuDescription').val().trim();
-        const priceType = $('#priceType').val();
         const currency = $('#menuCurrency').val() || 'KHR';
         const available = $('#menuAvailable').is(':checked');
         const featured = $('#menuFeatured').is(':checked');
         const imageFile = $('#menuImage')[0].files[0];
         
-        let price = null, promotionPrice = null, minPrice = null, maxPrice = null;
+        const minPrice = parseFloat($('#menuMinPrice').val());
+        const maxPrice = $('#menuMaxPrice').val() ? parseFloat($('#menuMaxPrice').val()) : null;
+        const promotionPrice = $('#menuPromoPrice').val() ? parseFloat($('#menuPromoPrice').val()) : null;
         
-        if (priceType === 'single') {
-            price = parseFloat($('#menuPrice').val()) || 0;
-        } else if (priceType === 'range') {
-            minPrice = parseFloat($('#menuMinPrice').val()) || 0;
-            maxPrice = parseFloat($('#menuMaxPrice').val()) || 0;
-            if (minPrice >= maxPrice) {
-                showError('Max price must be greater than min price');
-                return;
-            }
-        } else if (priceType === 'promotion') {
-            price = parseFloat($('#menuRegularPrice').val()) || 0;
-            promotionPrice = parseFloat($('#menuPromoPrice').val()) || 0;
-            if (promotionPrice >= price) {
-                showError('Promotion price must be less than regular price');
-                return;
-            }
-        }
-
         // Validation
         if (!title) {
             showError('Title is required');
@@ -393,6 +371,18 @@ $(document).ready(function() {
         }
         if (!categoryId) {
             showError('Category is required');
+            return;
+        }
+        if (!minPrice || minPrice <= 0) {
+            showError('Min price is required and must be greater than 0');
+            return;
+        }
+        if (maxPrice && maxPrice <= minPrice) {
+            showError('Max price must be greater than min price');
+            return;
+        }
+        if (promotionPrice && promotionPrice >= minPrice) {
+            showError('Promotion price must be less than min price');
             return;
         }
 
@@ -410,7 +400,7 @@ $(document).ready(function() {
                 dataType: 'json',
                 success: function(uploadResponse) {
                     if (uploadResponse.success) {
-                        saveMenuData(title, categoryId, description, price, promotionPrice, minPrice, maxPrice, currency, available, featured, uploadResponse.imagePath);
+                        saveMenuData(title, categoryId, description, minPrice, maxPrice, promotionPrice, currency, available, featured, uploadResponse.imagePath);
                     } else {
                         showError('Image upload failed: ' + uploadResponse.error);
                     }
@@ -421,12 +411,12 @@ $(document).ready(function() {
             });
         } else {
             const currentImage = editingId ? ($('#currentImage').val() || 'static/images/default.jpg') : 'static/images/default.jpg';
-            saveMenuData(title, categoryId, description, price, promotionPrice, minPrice, maxPrice, currency, available, featured, currentImage);
+            saveMenuData(title, categoryId, description, minPrice, maxPrice, promotionPrice, currency, available, featured, currentImage);
         }
     }
 
     // Save menu data to API
-    function saveMenuData(title, categoryId, description, price, promotionPrice, minPrice, maxPrice, currency, available, featured, imagePath) {
+    function saveMenuData(title, categoryId, description, minPrice, maxPrice, promotionPrice, currency, available, featured, imagePath) {
         const menuData = {
             title: title,
             categoryId: categoryId,
@@ -434,18 +424,16 @@ $(document).ready(function() {
             currency: currency,
             image: imagePath,
             available: available,
-            featured: featured
+            featured: featured,
+            minPrice: minPrice
         };
         
-        // Add price fields based on what's provided
-        if (minPrice !== null && maxPrice !== null) {
-            menuData.minPrice = minPrice;
+        // Add optional price fields
+        if (maxPrice !== null && maxPrice > 0) {
             menuData.maxPrice = maxPrice;
-        } else {
-            menuData.price = price;
-            if (promotionPrice !== null) {
-                menuData.promotionPrice = promotionPrice;
-            }
+        }
+        if (promotionPrice !== null && promotionPrice > 0) {
+            menuData.promotionPrice = promotionPrice;
         }
 
         const method = editingId ? 'PUT' : 'POST';
@@ -487,19 +475,10 @@ $(document).ready(function() {
         $('#menuFeatured').prop('checked', menu.featured === true);
         $('#currentImage').val(menu.image || '');
         
-        // Determine and set price type
-        if (menu.minPrice !== undefined && menu.maxPrice !== undefined) {
-            $('#priceType').val('range').trigger('change');
-            $('#menuMinPrice').val(menu.minPrice);
-            $('#menuMaxPrice').val(menu.maxPrice);
-        } else if (menu.promotionPrice && menu.price) {
-            $('#priceType').val('promotion').trigger('change');
-            $('#menuRegularPrice').val(menu.price);
-            $('#menuPromoPrice').val(menu.promotionPrice);
-        } else {
-            $('#priceType').val('single').trigger('change');
-            $('#menuPrice').val(menu.price || 0);
-        }
+        // Set price fields
+        $('#menuMinPrice').val(menu.minPrice || menu.price || 0);
+        $('#menuMaxPrice').val(menu.maxPrice || '');
+        $('#menuPromoPrice').val(menu.promotionPrice || '');
 
         // Show current image
         if (menu.image) {

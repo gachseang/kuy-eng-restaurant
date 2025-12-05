@@ -93,7 +93,7 @@
                            placeholder="e.g., Pad Thai, Tom Yum Soup">
                 </div>
 
-                <div class="form-row">
+                <div class="form-row two-columns">
                     <div class="form-group">
                         <label for="menuCategory">Category *</label>
                         <select id="menuCategory" name="category" required>
@@ -108,55 +108,25 @@
                             <option value="USD">USD ($)</option>
                         </select>
                     </div>
-
-                    <div class="form-group">
-                        <label for="priceType">Price Type *</label>
-                        <select id="priceType" name="priceType" required>
-                            <option value="single">Single Price</option>
-                            <option value="range">Price Range</option>
-                            <option value="promotion">With Promotion</option>
-                        </select>
-                    </div>
                 </div>
 
-                <!-- Single Price -->
-                <div id="singlePriceFields" class="price-fields">
+                <!-- Price Fields -->
+                <div class="form-row tree-columns">
                     <div class="form-group">
-                        <label for="menuPrice">Regular Price *</label>
-                        <input type="number" id="menuPrice" name="price" step="0.01" min="0" 
+                        <label for="menuMinPrice">Min Price *</label>
+                        <input type="number" id="menuMinPrice" name="minPrice" step="0.01" min="0" required
                                placeholder="0.00">
                     </div>
-                </div>
-
-                <!-- Price Range -->
-                <div id="priceRangeFields" class="price-fields" style="display: none;">
-                    <div class="form-row two-columns">
-                        <div class="form-group">
-                            <label for="menuMinPrice">Min Price *</label>
-                            <input type="number" id="menuMinPrice" name="minPrice" step="0.01" min="0" 
-                                   placeholder="0.00">
-                        </div>
-                        <div class="form-group">
-                            <label for="menuMaxPrice">Max Price *</label>
-                            <input type="number" id="menuMaxPrice" name="maxPrice" step="0.01" min="0" 
-                                   placeholder="0.00">
-                        </div>
+                    <div class="form-group">
+                        <label for="menuMaxPrice">Max Price</label>
+                        <input type="number" id="menuMaxPrice" name="maxPrice" step="0.01" min="0" 
+                               placeholder="Leave empty for single price">
                     </div>
-                </div>
 
-                <!-- Promotion Price -->
-                <div id="promotionPriceFields" class="price-fields" style="display: none;">
-                    <div class="form-row two-columns">
-                        <div class="form-group">
-                            <label for="menuRegularPrice">Regular Price *</label>
-                            <input type="number" id="menuRegularPrice" name="regularPrice" step="0.01" min="0" 
-                                   placeholder="0.00">
-                        </div>
-                        <div class="form-group">
-                            <label for="menuPromoPrice">Promotion Price *</label>
-                            <input type="number" id="menuPromoPrice" name="promotionPrice" step="0.01" min="0"
-                                   placeholder="0.00">
-                        </div>
+                    <div class="form-group">
+                        <label for="menuPromoPrice">Promotion Price</label>
+                        <input type="number" id="menuPromoPrice" name="promotionPrice" step="0.01" min="0" 
+                            placeholder="Leave empty if no promotion">
                     </div>
                 </div>
 

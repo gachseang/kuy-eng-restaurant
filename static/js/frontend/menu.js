@@ -98,15 +98,15 @@ function filterMenu() {
   switch(sortOption) {
     case 'price-low':
       filteredMenus.sort((a, b) => {
-        const priceA = a.promotionPrice || a.price;
-        const priceB = b.promotionPrice || b.price;
+        const priceA = a.promotionPrice || a.minPrice || a.price || 0;
+        const priceB = b.promotionPrice || b.minPrice || b.price || 0;
         return priceA - priceB;
       });
       break;
     case 'price-high':
       filteredMenus.sort((a, b) => {
-        const priceA = a.promotionPrice || a.price;
-        const priceB = b.promotionPrice || b.price;
+        const priceA = a.promotionPrice || a.minPrice || a.price || 0;
+        const priceB = b.promotionPrice || b.minPrice || b.price || 0;
         return priceB - priceA;
       });
       break;
@@ -136,36 +136,39 @@ function displayMenu() {
   filteredMenus.forEach(menu => {
     const category = categories.find(c => c.id === menu.categoryId);
     const categoryName = category ? category.name : 'Unknown';
-    const hasPromotion = menu.promotionPrice && menu.promotionPrice < menu.price;
-    const discount = hasPromotion ? Math.round((1 - menu.promotionPrice / menu.price) * 100) : 0;
     const isKHR = menu.currency === 'KHR';
-    const hasRange = menu.minPrice !== undefined && menu.maxPrice !== undefined;
+    
+    // Determine pricing structure
+    const basePrice = menu.minPrice || menu.price || 0;
+    const hasMaxPrice = menu.maxPrice !== null && menu.maxPrice !== undefined && menu.maxPrice > 0;
+    const hasPromotion = menu.promotionPrice && menu.promotionPrice < basePrice;
+    const discount = hasPromotion ? Math.round((1 - menu.promotionPrice / basePrice) * 100) : 0;
     
     // Format prices based on currency and type
     let priceDisplay;
-    if (hasRange) {
-      // Price range display
+    if (hasMaxPrice) {
+      // Price range display (minPrice - maxPrice)
       if (isKHR) {
-        priceDisplay = `${Math.round(menu.minPrice).toLocaleString('en-US')}៛ - ${Math.round(menu.maxPrice).toLocaleString('en-US')}៛`;
+        priceDisplay = `${Math.round(basePrice).toLocaleString('en-US')}៛ - ${Math.round(menu.maxPrice).toLocaleString('en-US')}៛`;
       } else {
-        priceDisplay = `$${menu.minPrice.toFixed(2)} - $${menu.maxPrice.toFixed(2)}`;
+        priceDisplay = `$${basePrice.toFixed(2)} - $${menu.maxPrice.toFixed(2)}`;
       }
     } else {
       // Single price or promotion display
       let currentPriceDisplay, promoPriceDisplay, originalPriceDisplay, savingsDisplay;
       if (isKHR) {
-        currentPriceDisplay = Math.round(menu.price).toLocaleString('en-US') + '៛';
+        currentPriceDisplay = Math.round(basePrice).toLocaleString('en-US') + '៛';
         if (hasPromotion) {
           promoPriceDisplay = Math.round(menu.promotionPrice).toLocaleString('en-US') + '៛';
-          originalPriceDisplay = Math.round(menu.price).toLocaleString('en-US') + '៛';
-          savingsDisplay = Math.round(menu.price - menu.promotionPrice).toLocaleString('en-US') + '៛';
+          originalPriceDisplay = Math.round(basePrice).toLocaleString('en-US') + '៛';
+          savingsDisplay = Math.round(basePrice - menu.promotionPrice).toLocaleString('en-US') + '៛';
         }
       } else {
-        currentPriceDisplay = '$' + menu.price.toFixed(2);
+        currentPriceDisplay = '$' + basePrice.toFixed(2);
         if (hasPromotion) {
           promoPriceDisplay = '$' + menu.promotionPrice.toFixed(2);
-          originalPriceDisplay = '$' + menu.price.toFixed(2);
-          savingsDisplay = '$' + (menu.price - menu.promotionPrice).toFixed(2);
+          originalPriceDisplay = '$' + basePrice.toFixed(2);
+          savingsDisplay = '$' + (basePrice - menu.promotionPrice).toFixed(2);
         }
       }
       priceDisplay = hasPromotion ? 
@@ -188,7 +191,7 @@ function displayMenu() {
           <h3 class="menu-title">${menu.title}</h3>
           <p class="menu-description">${menu.description}</p>
           <div class="menu-price-container">
-            ${hasRange ? `<span class="price-range">${priceDisplay}</span>` : priceDisplay}
+            ${hasMaxPrice ? `<span class="price-range">${priceDisplay}</span>` : priceDisplay}
           </div>
         </div>
       </div>

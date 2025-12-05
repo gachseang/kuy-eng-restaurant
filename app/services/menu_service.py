@@ -1,130 +1,149 @@
 """
 Menu Service - Business logic for menu operations
 """
-import json
-import time
 import os
 from typing import List, Dict, Optional
-from app.config import MENUS_FILE
+from sqlalchemy.orm import Session
+from app.models.models import Menu
+from app.database import SessionLocal
+
+
+def get_db_session() -> Session:
+    """Get database session"""
+    return SessionLocal()
 
 
 def read_menus() -> List[Dict]:
-    """Read all menus from JSON file"""
+    """Read all menus from database"""
+    db = get_db_session()
     try:
-        with open(MENUS_FILE, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            return data.get("menus", [])
-    except FileNotFoundError:
-        write_menus([])
-        return []
-
-
-def write_menus(menus: List[Dict]) -> None:
-    """Write menus to JSON file"""
-    with open(MENUS_FILE, 'w', encoding='utf-8') as f:
-        json.dump({"menus": menus}, f, indent=2, ensure_ascii=False)
+        menus = db.query(Menu).all()
+        return [menu.to_dict() for menu in menus]
+    finally:
+        db.close()
 
 
 def get_menu_by_id(menu_id: str) -> Optional[Dict]:
     """Get a single menu by ID"""
-    menus = read_menus()
-    return next((menu for menu in menus if menu["id"] == menu_id), None)
+    db = get_db_session()
+    try:
+        menu = db.query(Menu).filter(Menu.id == int(menu_id)).first()
+        return menu.to_dict() if menu else None
+    finally:
+        db.close()
 
 
 def count_menus_by_category(category_id: str) -> int:
     """Count menus in a specific category"""
-    menus = read_menus()
-    return sum(1 for menu in menus if menu.get("categoryId") == category_id)
+    db = get_db_session()
+    try:
+        count = db.query(Menu).filter(Menu.category_id == int(category_id)).count()
+        return count
+    finally:
+        db.close()
 
 
 def get_menu_counts() -> Dict[str, int]:
     """Get menu count for each category"""
-    menus = read_menus()
-    counts = {}
-    for menu in menus:
-        cat_id = menu.get("categoryId", "")
-        counts[cat_id] = counts.get(cat_id, 0) + 1
-    return counts
+    db = get_db_session()
+    try:
+        menus = db.query(Menu).all()
+        counts = {}
+        for menu in menus:
+            cat_id = str(menu.category_id)
+            counts[cat_id] = counts.get(cat_id, 0) + 1
+        return counts
+    finally:
+        db.close()
 
 
-def create_menu(title: str, category_id: str, description: str, price: float,
-                promotion_price: Optional[float] = None, currency: str = "KHR",
-                image: str = "static/images/default.jpg", available: bool = True,
-                featured: bool = False) -> Dict:
+def create_menu(title: str, category_id: str, description: str, min_price: float,
+                max_price: Optional[float] = None, promotion_price: Optional[float] = None, 
+                currency: str = "KHR", image: str = "static/images/default.jpg", 
+                available: bool = True, featured: bool = False) -> Dict:
     """Create a new menu item"""
-    menus = read_menus()
-    
-    new_menu = {
-        "id": str(int(time.time() * 1000)),
-        "categoryId": category_id,
-        "title": title,
-        "description": description,
-        "price": price,
-        "promotionPrice": promotion_price,
-        "currency": currency,
-        "image": image,
-        "available": available,
-        "featured": featured
-    }
-    
-    menus.append(new_menu)
-    write_menus(menus)
-    
-    return new_menu
+    db = get_db_session()
+    try:
+        new_menu = Menu(
+            category_id=int(category_id),
+            title=title,
+            description=description,
+            min_price=min_price,
+            max_price=max_price,
+            promotion_price=promotion_price,
+            currency=currency,
+            image=image,
+            available=available,
+            featured=featured
+        )
+        db.add(new_menu)
+        db.commit()
+        db.refresh(new_menu)
+        return new_menu.to_dict()
+    finally:
+        db.close()
 
 
 def update_menu(menu_id: str, **kwargs) -> Optional[Dict]:
     """Update an existing menu item"""
-    menus = read_menus()
-    
-    for menu in menus:
-        if menu["id"] == menu_id:
-            if "title" in kwargs and kwargs["title"] is not None:
-                menu["title"] = kwargs["title"]
-            if "categoryId" in kwargs and kwargs["categoryId"] is not None:
-                menu["categoryId"] = kwargs["categoryId"]
-            if "description" in kwargs and kwargs["description"] is not None:
-                menu["description"] = kwargs["description"]
-            if "price" in kwargs and kwargs["price"] is not None:
-                menu["price"] = kwargs["price"]
-            if "promotionPrice" in kwargs and kwargs["promotionPrice"] is not None:
-                menu["promotionPrice"] = kwargs["promotionPrice"]
-            if "currency" in kwargs and kwargs["currency"] is not None:
-                menu["currency"] = kwargs["currency"]
-            if "image" in kwargs and kwargs["image"] is not None:
-                menu["image"] = kwargs["image"]
-            if "available" in kwargs and kwargs["available"] is not None:
-                menu["available"] = kwargs["available"]
-            if "featured" in kwargs and kwargs["featured"] is not None:
-                menu["featured"] = kwargs["featured"]
-            
-            write_menus(menus)
-            return menu
-    
-    return None
+    db = get_db_session()
+    try:
+        menu = db.query(Menu).filter(Menu.id == int(menu_id)).first()
+        
+        if not menu:
+            return None
+        
+        if "title" in kwargs and kwargs["title"] is not None:
+            menu.title = kwargs["title"]
+        if "categoryId" in kwargs and kwargs["categoryId"] is not None:
+            menu.category_id = int(kwargs["categoryId"])
+        if "description" in kwargs and kwargs["description"] is not None:
+            menu.description = kwargs["description"]
+        if "minPrice" in kwargs and kwargs["minPrice"] is not None:
+            menu.min_price = kwargs["minPrice"]
+        if "maxPrice" in kwargs:
+            menu.max_price = kwargs["maxPrice"]
+        if "promotionPrice" in kwargs:
+            menu.promotion_price = kwargs["promotionPrice"]
+        if "currency" in kwargs and kwargs["currency"] is not None:
+            menu.currency = kwargs["currency"]
+        if "image" in kwargs and kwargs["image"] is not None:
+            menu.image = kwargs["image"]
+        if "available" in kwargs and kwargs["available"] is not None:
+            menu.available = kwargs["available"]
+        if "featured" in kwargs and kwargs["featured"] is not None:
+            menu.featured = kwargs["featured"]
+        
+        db.commit()
+        db.refresh(menu)
+        return menu.to_dict()
+    finally:
+        db.close()
 
 
 def delete_menu(menu_id: str) -> bool:
     """Delete a menu item and its image"""
-    menus = read_menus()
-    
-    # Find and delete image
-    for menu in menus:
-        if menu["id"] == menu_id:
-            image_path = menu.get("image", "")
-            if image_path and image_path not in ["static/images/default.jpg", "assets/images/default.jpg"]:
-                if os.path.exists(image_path):
-                    try:
-                        os.remove(image_path)
-                    except:
-                        pass
-            break
-    
-    original_length = len(menus)
-    menus = [m for m in menus if m["id"] != menu_id]
-    
-    if len(menus) < original_length:
-        write_menus(menus)
+    db = get_db_session()
+    try:
+        menu = db.query(Menu).filter(Menu.id == int(menu_id)).first()
+        
+        if not menu:
+            return False
+        
+        # Delete image if it exists
+        image_path = menu.image
+        if image_path and image_path not in ["static/images/default.jpg", "assets/images/default.jpg"]:
+            if os.path.exists(image_path):
+                try:
+                    os.remove(image_path)
+                except:
+                    pass
+        
+        db.delete(menu)
+        db.commit()
         return True
+    finally:
+        db.close()
+
     
     return False
